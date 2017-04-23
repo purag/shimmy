@@ -16,13 +16,14 @@ declare -ag __env_stack
 declare __pkg
 
 __push_stack () {
-  eval "${1}+=("$2")"
+  eval "${1}+=(\"$2\")"
 }
 
 __pop_stack () {
-  local stack=("${!1}")
+  local ref="${1}[@]"
+  local stack=("${!ref}")
   eval $2="${stack[-1]}"
-  eval "${1}=${stack[@]:0:${#stack[@]}-1}"
+  eval "${1}=(${stack[@]:0:${#stack[@]}-1})"
 }
 
 # start a package definition
@@ -38,11 +39,6 @@ package () {
   __push_stack "__pkg_stack" "$1"
 }
 
-# actually source a file
-__source () {
-  source "$1"
-}
-
 # get all the defined variables and functions
 __getenv () {
   echo "$(compgen -vA function | sort)"
@@ -54,14 +50,11 @@ import () {
     __err "No script name passed to import."
   fi
 
-  __push_stack "__env_stack" "$(__getenv)"
-  __source "$1"
+  local __old_env="$(__getenv)"
+  source "$1"
+  local __new_env="$(__getenv)"
 
   # get the variables and functions declared in this file
-  local __new_env
-  __pop_stack "__env_stack" __old_env
-  __new_env="$(__getenv)"
-
   local toScope=$(comm -13 <(echo "$__old_env") <(echo "$__new_env"))
 
   local package
@@ -72,13 +65,12 @@ import () {
 
     # if $decl is a function...
     if declare -f "$decl" > /dev/null; then
-      eval "${package}__$(declare -f "$decl")"
-      unset -f "$decl"
+      eval "function ${package}__$(declare -f "$decl")"
 
     # else it's a variable, so just grab its value
     else
       eval "${package}__$decl='${!decl}'"
-      unset "$decl"
     fi
+    unset "$decl"
   done
 }
