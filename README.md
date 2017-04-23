@@ -35,8 +35,12 @@ endpackage
 ```
 #!/bin/bash
 # lib/main
+source shimmy
+package lib
 
 var="hello world"
+
+endpackage
 ```
 
 # TODO
