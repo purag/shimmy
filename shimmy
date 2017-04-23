@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# print an error and exit
+__err () {
+  printf '%s' "$(tput setaf 1)"
+  printf '%s\n' "Error: $@"
+  printf '%s' "$(tput sgr 0)"
+  exit 1
+}
+
+# package name stack
+declare -a __pkg_defs
+
+__push_package () {
+  if [ "x$1" = "x" ]; then
+    err "No package name specified."
+  fi
+  if (( $# > 2 )); then
+    err "Only one package per file."
+  fi
+  __pkg_defs+=("$1")
+  echo $__pkg_defs
+}
+
+__pop_package () {
+  __pkg_defs=(${__pkg_defs[@]:0:${#__pkg_defs[@]}-1})
+  echo $__pkg_defs
+}
+
+# start a package definition
+# should be the first line in a package file
+package () {
+  __push_package "$@"
+}
+
+# end a package definition
+# should be the last line in a package file
+endpackage () {
+  true
+  # __pop_package
+}
+
+# import a package
+import () {
+  if [ "x$1" = "x" ]; then
+    err "No script name passed to import."
+  fi
+
+  local __old_env=$(compgen -vA function | sort)
+  source "$1"
+  local __new_env=$(compgen -vA function | sort)
+
+  # get the variables and functions declared in this file
+  local toScope=$(comm -13 <(echo "$__old_env") <(echo "$__new_env"))
+
+  # redeclare them under the new package name
+  local package=${__pkg_defs[-1]}
+  local decl
+  for decl in $toScope; do
+    if declare -f "$decl" > /dev/null; then
+      # TODO: copy function implementations
+      true
+    else
+      eval ${package}__$decl=$(echo ${!decl})
+    fi
+    unset "$decl"
+  done
+
+  __pop_package
+}
