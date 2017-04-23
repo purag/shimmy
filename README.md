@@ -7,7 +7,7 @@ Shimmy will dynamically namespace imported packages, so declared variables and f
 You can declare a package in a shell script using thw `package <package_name>` command. One file can only contain one package.
 
 ## Import
-You can import a package using `import path/to/file`. When a package is imported, all the variable and function declarations in the package will be prefixed with the package name.
+You can import a package using `import path/to/file`. When a package is imported, all the variable and function declarations in the package will be prefixed with the package name followed by two underscores (i.e. if you import a file containing `package lib`, you access variables declared in that package with `lib__<var>`).
 
 ## Usage
 For consistency, all scripts you wish to use shimmy with should start like this:
