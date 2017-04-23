@@ -8,62 +8,77 @@ __err () {
   exit 1
 }
 
-# package name stack
-declare -a __pkg_defs
+# global stack of declared packages
+declare -ag __pkg_stack
+declare -ag __env_stack
 
-__push_package () {
-  if [ "x$1" = "x" ]; then
-    err "No package name specified."
-  fi
-  if (( $# > 2 )); then
-    err "Only one package per file."
-  fi
-  __pkg_defs+=("$1")
+# the current package being declared
+declare __pkg
+
+__push_stack () {
+  eval "${1}+=("$2")"
 }
 
-__pop_package () {
-  __pkg_defs=(${__pkg_defs[@]:0:${#__pkg_defs[@]}-1})
+__pop_stack () {
+  local stack=("${!1}")
+  eval $2="${stack[-1]}"
+  eval "${1}=${stack[@]:0:${#stack[@]}-1}"
 }
 
 # start a package definition
 # should be the first line in a package file
 package () {
-  __push_package "$@"
+  if [ "x$1" = "x" ]; then
+    __err "No package name specified."
+  fi
+  if (( $# > 2 )); then
+    __err "Only one package per file."
+  fi
+  __pkg="$1"
+  __push_stack "__pkg_stack" "$1"
 }
 
-# end a package definition
-# should be the last line in a package file
-endpackage () {
-  true
-  # __pop_package
+# actually source a file
+__source () {
+  source "$1"
+}
+
+# get all the defined variables and functions
+__getenv () {
+  echo "$(compgen -vA function | sort)"
 }
 
 # import a package
 import () {
   if [ "x$1" = "x" ]; then
-    err "No script name passed to import."
+    __err "No script name passed to import."
   fi
 
-  local __old_env=$(compgen -vA function | sort)
-  source "$1"
-  local __new_env=$(compgen -vA function | sort)
+  __push_stack "__env_stack" "$(__getenv)"
+  __source "$1"
 
   # get the variables and functions declared in this file
+  local __new_env
+  __pop_stack "__env_stack" __old_env
+  __new_env="$(__getenv)"
+
   local toScope=$(comm -13 <(echo "$__old_env") <(echo "$__new_env"))
 
-  # redeclare them under the new package name
-  local package=${__pkg_defs[-1]}
+  local package
   local decl
+  __pop_stack "__pkg_stack" package
   for decl in $toScope; do
+    [[ "$decl" = "__"* ]] && continue
+
     # if $decl is a function...
     if declare -f "$decl" > /dev/null; then
       eval "${package}__$(declare -f "$decl")"
+      unset -f "$decl"
+
     # else it's a variable, so just grab its value
     else
       eval "${package}__$decl='${!decl}'"
+      unset "$decl"
     fi
-    unset "$decl"
   done
-
-  __pop_package
 }
