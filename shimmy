@@ -19,12 +19,10 @@ __push_package () {
     err "Only one package per file."
   fi
   __pkg_defs+=("$1")
-  echo $__pkg_defs
 }
 
 __pop_package () {
   __pkg_defs=(${__pkg_defs[@]:0:${#__pkg_defs[@]}-1})
-  echo $__pkg_defs
 }
 
 # start a package definition
@@ -57,11 +55,12 @@ import () {
   local package=${__pkg_defs[-1]}
   local decl
   for decl in $toScope; do
+    # if $decl is a function...
     if declare -f "$decl" > /dev/null; then
-      # TODO: copy function implementations
-      true
+      eval "${package}__$(declare -f "$decl")"
+    # else it's a variable, so just grab its value
     else
-      eval ${package}__$decl=$(echo ${!decl})
+      eval "${package}__$decl='${!decl}'"
     fi
     unset "$decl"
   done
