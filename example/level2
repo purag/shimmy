@@ -1,0 +1,5 @@
+#!/bin/bash
+source ../spackle
+package lvl2
+
+var="hello"

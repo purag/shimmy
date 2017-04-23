@@ -1,0 +1,12 @@
+#!/bin/bash
+source ../spackle
+package p
+
+import toimport
+
+echo ${mylocalvar:-undefined}
+${myfunction:-echo undefined}
+echo ${var:-undefined}
+echo ${myscript__mylocalvar:-undefined}
+${myscript__myfunction:-echo undefined}
+echo ${myscript__lvl2__var:-undefined}
