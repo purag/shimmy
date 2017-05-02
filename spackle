@@ -35,6 +35,7 @@ package () {
   if (( $# > 2 )); then
     __err "Only one package per file."
   fi
+  # TODO error check package name
   __pkg="$1"
   __push_stack "__pkg_stack" "$1"
 }
@@ -65,12 +66,13 @@ import () {
 
     # if $decl is a function...
     if declare -f "$decl" > /dev/null; then
-      eval "function ${package}__$(declare -f "$decl")"
+      eval "${package}__$(declare -f "$decl")"
 
     # else it's a variable, so just grab its value
     else
       eval "${package}__$decl='${!decl}'"
     fi
+
     unset "$decl"
   done
 }
