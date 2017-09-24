@@ -65,7 +65,7 @@ import () {
   local decl
   __pop_stack "__pkg_stack" package
   for decl in $toScope; do
-    [[ "$decl" = "__"* ]] && continue
+    [[ "$decl" = "__"* ]] && unset "$decl" && continue
 
     # if $decl is a function...
     if declare -f "$decl" > /dev/null; then
