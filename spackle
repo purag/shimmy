@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# throw errors when using undefined variables
+set -o nounset
+
 # print an error and exit
 __err () {
   printf '%s' "$(tput setaf 1)"
