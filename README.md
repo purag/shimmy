@@ -1,47 +1,103 @@
-# shimmy
-A shell script package scoping and importing tool.
+# spackle
+Spackle is a module system for bash scripts.
 
-Shimmy will dynamically namespace imported packages, so declared variables and functions will be accessible through the package prefix specified in the imported file. See below for an example.
+Spacklew ill dynamically namespace imported packages, so declared variables and functions will be accessible through the package prefix specified in the imported file.
+
+Spackle also supports package-private variables using a two-underscore prefix (`__private_varname`).
+
+## Installation
+First, place spackle in your project's root:
+
+```
+wget https://raw.githubusercontent.com/purag/spackle/master/spackle
+```
+
+Then, source spackle in each of your project's files:
+
+```
+#!/bin/bash
+source spackle # or `source ../spackle`, `source ../../spackle`
+```
 
 ## Packages
-You can declare a package in a shell script using thw `package <package_name>` command. One file can only contain one package.
+Each project file can contain one package, which must be declared before importing any other packages. To declare a package, source spackle and use the `package` command, which takes one argument, the package name:
+
+```
+#!/bin/bash
+source spackle
+package myProject
+```
+
+The package name can be any classic bash identifier (alphanumberic + underscores).
 
 ## Import
-You can import a package using `import path/to/file`. When a package is imported, all the variable and function declarations in the package will be prefixed with the package name followed by two underscores (i.e. if you import a file containing `package lib`, you access variables declared in that package with `lib__<var>`).
+You include packages by importing the files they're defined in. To do this, use the `import` command, which takes one argument, the path to the file:
 
-## Usage
-For consistency, all scripts you wish to use shimmy with should start like this:
-
-```
-source shimmy
-package <package_name>
-```
-
-## Example
-Here's a simple example of two files, where one includes the other:
+`main.sh`:
 
 ```
 #!/bin/bash
-source shimmy
-package main
+source spackle
+package myProject
 
-import lib
+import util/helpers.sh
 
-echo ${lib__var:-undefined}
-
-endpackage
+echo "$util__str"
 ```
+
+`util/helpers.sh`:
 
 ```
 #!/bin/bash
-# lib/main
-source shimmy
-package lib
+source ../spackle
+package util
 
-var="hello world"
-
-endpackage
+str="a public variable"
 ```
 
-# TODO
-functions don't actually work yet. :P
+Any public variables/functions declared in `util/helpers.sh` will be accessible to files that import it with the prefix `util__`.
+
+### Nested Imports
+If you import a file which in turn imports a file, the package prefixes compound:
+
+`main.sh`:
+
+```
+#!/bin/bash
+source spackle
+package myProject
+
+import util/helpers.sh
+
+__trimmed=`util__str__trim "  hello  "`
+echo "$__trimmed" # "hello"
+```
+
+`util/helpers.sh`:
+
+```
+#!/bin/bash
+source ../spackle
+package util
+
+import string/helpers.sh
+```
+
+`util/string/helpers.sh`
+
+```
+#!/bin/bash
+source ../../spackle
+package str
+
+# trim leading and trailing whitespace from a string
+trim () {
+  :
+}
+```
+
+# TODO(?)
+- add a function to print a dependency tree (using `set` to disable execution)
+- add `import <file> as <renamed-package>` to rename packages on the fly
+- add `import-private <file>` to import a file privately (do not expose the imported members to anyone importing the current file)
+- add `import <member-list> from <file>` to only import specified members
