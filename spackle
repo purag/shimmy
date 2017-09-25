@@ -54,8 +54,11 @@ import () {
     __err "No script name passed to import."
   fi
 
+  local __cwd=`pwd`
+  cd "$(dirname "$1")"
+
   local __old_env="$(__getenv)"
-  source "$1"
+  source "$(basename "$1")"
   local __new_env="$(__getenv)"
 
   # get the variables and functions declared in this file
@@ -78,4 +81,6 @@ import () {
 
     unset "$decl"
   done
+
+  cd "$__cwd"
 }
