@@ -12,7 +12,9 @@ First, place spackle in your project's root:
 wget https://raw.githubusercontent.com/purag/spackle/master/spackle
 ```
 
-Then, source spackle in each of your project's files:
+Then, source spackle in your project's entry point:
+
+`main.sh`:
 
 ```
 #!/bin/bash
@@ -20,11 +22,13 @@ source spackle # or `source ../spackle`, `source ../../spackle`
 ```
 
 ## Packages
-Each project file can contain one package, which must be declared before importing any other packages. To declare a package, source spackle and use the `package` command, which takes one argument, the package name:
+Each project file can contain one package, which must be declared before importing any other packages. To declare a package, use the `package` command, which takes one argument, the package name:
+
+`test/readme/main.sh`:
 
 ```
 #!/bin/bash
-source spackle
+source ../../spackle
 package myProject
 ```
 
@@ -33,26 +37,26 @@ The package name can be any classic bash identifier (alphanumberic + underscores
 ## Import
 You include packages by importing the files they're defined in. To do this, use the `import` command, which takes one argument, the path to the file:
 
-`main.sh`:
+`test/readme/main.sh`:
 
 ```
 #!/bin/bash
-source spackle
+source ../../spackle
 package myProject
 
 import util/helpers.sh
 
-echo "$util__str"
+echo "$util__var" # 'a public variable'
 ```
 
-`util/helpers.sh`:
+`test/readme/util/helpers.sh`:
 
 ```
 #!/bin/bash
-source ../spackle
+source ../../../spackle
 package util
 
-str="a public variable"
+var="a public variable"
 ```
 
 Any public variables/functions declared in `util/helpers.sh` will be accessible to files that import it with the prefix `util__`.
@@ -60,41 +64,45 @@ Any public variables/functions declared in `util/helpers.sh` will be accessible 
 ### Nested Imports
 If you import a file which in turn imports a file, the package prefixes compound:
 
-`main.sh`:
+`test/readme/main.sh`:
 
 ```
 #!/bin/bash
-source spackle
+source ../../spackle
 package myProject
 
 import util/helpers.sh
 
+echo "$util__var" # 'a public variable'
+
 __trimmed=`util__str__trim "  hello  "`
-echo "$__trimmed" # "hello"
+echo "'$__trimmed'" # 'hello'
 ```
 
-`util/helpers.sh`:
+`test/readme/util/helpers.sh`:
 
 ```
 #!/bin/bash
-source ../spackle
+source ../../../spackle
 package util
 
 import string/helpers.sh
 ```
 
-`util/string/helpers.sh`
+`test/readme/util/string/helpers.sh`
 
 ```
 #!/bin/bash
-source ../../spackle
+source ../../../../spackle
 package str
 
 # trim leading and trailing whitespace from a string
 trim () {
-  :
+  echo "$1" | sed 's/^ *//g' | sed 's/ *$//g'
 }
 ```
+
+This example can be found in `test/readme`.
 
 # TODO(?)
 - add a function to print a dependency tree (using `set` to disable execution)
