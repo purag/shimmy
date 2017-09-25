@@ -1,9 +1,9 @@
 # spackle
 Spackle is a module system for bash scripts.
 
-Spacklew ill dynamically namespace imported packages, so declared variables and functions will be accessible through the package prefix specified in the imported file.
+Spackle will dynamically namespace imported packages, so declared variables and functions will be accessible through the package prefix specified in the imported file.
 
-Spackle also supports package-private variables using a two-underscore prefix (`__private_varname`).
+Spackle also supports package-private declarations using a two-underscore prefix (`__private_varname`).
 
 ## Installation
 First, place spackle in your project's root:
@@ -12,7 +12,7 @@ First, place spackle in your project's root:
 wget https://raw.githubusercontent.com/purag/spackle/master/spackle
 ```
 
-Then, source spackle in your project's entry point:
+Then, source spackle in each of your project's files:
 
 `main.sh`:
 
@@ -32,7 +32,7 @@ source ../../spackle
 package myProject
 ```
 
-The package name can be any classic bash identifier (alphanumberic + underscores).
+The package name must be a classic bash identifier (alphanumberic + underscores) since it will be used in identifiers.
 
 ## Import
 You include packages by importing the files they're defined in. To do this, use the `import` command, which takes one argument, the path to the file:
