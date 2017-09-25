@@ -8,7 +8,7 @@ Spackle also supports package-private declarations using a two-underscore prefix
 ## Installation
 First, place spackle in your project's root:
 
-```
+```bash
 wget https://raw.githubusercontent.com/purag/spackle/master/spackle
 ```
 
@@ -16,7 +16,7 @@ Then, source spackle in each of your project's files:
 
 `main.sh`:
 
-```
+```bash
 #!/bin/bash
 source spackle # or `source ../spackle`, `source ../../spackle`
 ```
@@ -26,7 +26,7 @@ Each project file can contain one package, which must be declared before importi
 
 `test/readme/main.sh`:
 
-```
+```bash
 #!/bin/bash
 source ../../spackle
 package myProject
@@ -39,7 +39,7 @@ You include packages by importing the files they're defined in. To do this, use 
 
 `test/readme/main.sh`:
 
-```
+```bash
 #!/bin/bash
 source ../../spackle
 package myProject
@@ -51,7 +51,7 @@ echo "$util__var" # 'a public variable'
 
 `test/readme/util/helpers.sh`:
 
-```
+```bash
 #!/bin/bash
 source ../../../spackle
 package util
@@ -66,7 +66,7 @@ If you import a file which in turn imports a file, the package prefixes compound
 
 `test/readme/main.sh`:
 
-```
+```bash
 #!/bin/bash
 source ../../spackle
 package myProject
@@ -81,7 +81,7 @@ echo "'$__trimmed'" # 'hello'
 
 `test/readme/util/helpers.sh`:
 
-```
+```bash
 #!/bin/bash
 source ../../../spackle
 package util
@@ -91,7 +91,7 @@ import string/helpers.sh
 
 `test/readme/util/string/helpers.sh`
 
-```
+```bash
 #!/bin/bash
 source ../../../../spackle
 package str
