@@ -34,6 +34,8 @@ package myProject
 
 The package name must be a classic bash identifier (alphanumberic + underscores) since it will be used in identifiers.
 
+**NOTE**: Like C++ namespaces, multiple files can provide the same package.
+
 ## Import
 You include packages by importing the files they're defined in. To do this, use the `import` command, which takes one argument, the path to the file:
 
